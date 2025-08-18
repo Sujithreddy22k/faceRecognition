@@ -5,7 +5,15 @@ import streamlit as st
 from insightface.app import FaceAnalysis 
 from sklearn.metrics.pairwise import cosine_similarity
 import logging
+import time
 
+# ----------------- Logging Setup -----------------
+LOG_FILE = "verification_logs.log"
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # ----------------- Face Analysis Setup -----------------
 app = FaceAnalysis(name="buffalo_l", providers=['CPUExecutionProvider'])
@@ -27,23 +35,37 @@ def get_embedding(image):
         return None, None
     return faces[0].normed_embedding, faces[0]
 
-def verify_employee(empid, input_image, threshold=0.):
-    """Verify input image against the stored image of empid."""
+def verify_employee(empid, input_image, threshold=0.5):
+    """Verify input image against the stored image of empid, with timing logs."""
+    start_time = time.time()
+    logging.info(f"Starting verification for {empid}")
+
     stored_img = load_employee_image(empid)
     if stored_img is None:
+        logging.error(f"{empid} - Employee ID not found in database")
         return None, "Employee ID not found in database"
 
+    # Get embeddings with timing
+    t0 = time.time()
     stored_emb, _ = get_embedding(stored_img)
+    stored_time = time.time() - t0
+    logging.info(f"{empid} - Stored embedding computed in {stored_time:.3f} sec")
+
+    t1 = time.time()
     input_emb, _ = get_embedding(input_image)
+    input_time = time.time() - t1
+    logging.info(f"{empid} - Input embedding computed in {input_time:.3f} sec")
 
     if stored_emb is None or input_emb is None:
+        logging.warning(f"{empid} - Face not detected.")
         return None, "Face not detected."
 
     # Cosine similarity
     sim = cosine_similarity([stored_emb], [input_emb])[0][0]
     verified = sim > threshold
 
-
+    total_time = time.time() - start_time
+    logging.info(f"{empid} - Verification completed in {total_time:.3f} sec | Result: {verified}, Similarity: {sim:.4f}")
 
     return verified, sim
 
@@ -66,12 +88,11 @@ with tab1:
 
         if result is None:
             st.error(message)
-            
         else:
             if result:
-                st.success("Verification Passed.")
+                st.success(f"✅ Verification Passed (Similarity: {message:.4f})")
             else:
-                st.error("Verification Failed.")
+                st.error(f"❌ Verification Failed (Similarity: {message:.4f})")
 
 # ---------- Tab 2: Live Webcam ----------
 with tab2:
@@ -88,9 +109,8 @@ with tab2:
 
         if result is None:
             st.error(message)
-            
         else:
             if result:
-                st.success("Verification Passed.")
+                st.success(f"✅ Verification Passed (Similarity: {message:.4f})")
             else:
-                st.error("Verification Failed.")
+                st.error(f"❌ Verification Failed (Similarity: {message:.4f})")
