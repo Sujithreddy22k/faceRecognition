@@ -43,8 +43,7 @@ def verify_employee(empid, input_image, threshold=0.65):
     sim = cosine_similarity([stored_emb], [input_emb])[0][0]
     verified = sim > threshold
 
-    # Log attempt
-    logging.info(f"EmpID: {empid}, Similarity: {sim:.4f}, Verified: {verified}")
+
 
     return verified, sim
 
@@ -67,7 +66,7 @@ with tab1:
 
         if result is None:
             st.error(message)
-            logging.warning(f"EmpID: {empid}, Verification Failed - {message}")
+            
         else:
             if result:
                 st.success("Verification Passed.")
@@ -89,7 +88,7 @@ with tab2:
 
         if result is None:
             st.error(message)
-            logging.warning(f"EmpID: {empid}, Verification Failed (Live) - {message}")
+            
         else:
             if result:
                 st.success("Verification Passed.")
