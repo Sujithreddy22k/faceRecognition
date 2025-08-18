@@ -24,7 +24,9 @@ EMPLOYEE_DIR = "employees"
 def load_employee_images(empid):
     """Load all stored images for a given employee ID."""
     emp_dir = os.path.join(EMPLOYEE_DIR, empid)
+    logging.info(f"Looking for employee folder: {emp_dir}")
     if not os.path.exists(emp_dir):
+        logging.error(f"Folder not found: {emp_dir}")
         return []
 
     images = []
@@ -34,6 +36,8 @@ def load_employee_images(empid):
             img = cv2.imread(img_path)
             if img is not None:
                 images.append(img)
+            else:
+                logging.warning(f"Failed to load image: {img_path}")
     return images
 
 def get_embedding(image):
@@ -57,7 +61,7 @@ def verify_employee(empid, input_image, threshold=0.5):
     stored_images = load_employee_images(empid)
     if not stored_images:
         logging.error(f"{empid} - No images found in database")
-        return None, "Employee images not found in database"
+        return None, "Employee ID not found in database"
 
     # Compute embeddings one by one
     for idx, img in enumerate(stored_images):
@@ -83,7 +87,7 @@ def verify_employee(empid, input_image, threshold=0.5):
 st.title("Employee Face Verification System")
 st.write("Verify uploaded image OR live webcam feed against employee database")
 
-empid = st.text_input("Enter Employee ID:")
+empid = st.text_input("Enter Employee ID:").strip()  # <-- strip spaces
 
 tab1, tab2 = st.tabs(["📤 Upload Image", "📷 Live Webcam"])
 
@@ -124,3 +128,4 @@ with tab2:
                 st.success(f"✅ Verification Passed (Similarity: {message:.4f})")
             else:
                 st.error(f"❌ Verification Failed (Similarity: {message:.4f})")
+
