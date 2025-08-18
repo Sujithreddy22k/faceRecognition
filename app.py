@@ -27,7 +27,7 @@ def get_embedding(image):
         return None, None
     return faces[0].normed_embedding, faces[0]
 
-def verify_employee(empid, input_image, threshold=0.65):
+def verify_employee(empid, input_image, threshold=0.):
     """Verify input image against the stored image of empid."""
     stored_img = load_employee_image(empid)
     if stored_img is None:
