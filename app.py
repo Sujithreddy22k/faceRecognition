@@ -1,18 +1,11 @@
 import os
-import cv2 # type: ignore
-import numpy as np # type: ignore
-import streamlit as st # type: ignore
-from insightface.app import FaceAnalysis # type: ignore
-from sklearn.metrics.pairwise import cosine_similarity # type: ignore
+import cv2 
+import numpy as np 
+import streamlit as st 
+from insightface.app import FaceAnalysis 
+from sklearn.metrics.pairwise import cosine_similarity
 import logging
 
-# ----------------- Logging Setup -----------------
-LOG_FILE = "verification_logs.log"
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 # ----------------- Face Analysis Setup -----------------
 app = FaceAnalysis(name="buffalo_l", providers=['CPUExecutionProvider'])
