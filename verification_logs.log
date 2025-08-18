@@ -1,0 +1,21 @@
+2025-08-18 16:38:07,693 - INFO - Starting verification for emp_002
+2025-08-18 16:38:10,182 - INFO - emp_002 - Stored embedding computed in 2.395 sec
+2025-08-18 16:38:12,606 - INFO - emp_002 - Input embedding computed in 2.424 sec
+2025-08-18 16:38:12,614 - INFO - emp_002 - Verification completed in 4.921 sec | Result: True, Similarity: 0.6462
+2025-08-18 16:40:51,160 - INFO - Starting verification for emp_002
+2025-08-18 16:40:53,707 - INFO - Precomputed embedding for emp_001
+2025-08-18 16:40:56,174 - INFO - Precomputed embedding for emp_002
+2025-08-18 16:41:00,690 - INFO - Precomputed embedding for emp_003
+2025-08-18 16:41:03,081 - INFO - emp_002 - Input embedding computed in 2.371 sec
+2025-08-18 16:41:03,081 - INFO - emp_002 - Verification completed in 11.921 sec | Result: True, Similarity: 0.6868
+2025-08-18 16:41:22,830 - INFO - Starting verification for emp_002
+2025-08-18 16:41:25,240 - INFO - emp_002 - Input embedding computed in 2.406 sec
+2025-08-18 16:41:25,254 - INFO - emp_002 - Verification completed in 2.424 sec | Result: True, Similarity: 1.0000
+2025-08-18 16:56:13,443 - INFO - Starting verification for emp_002
+2025-08-18 16:56:13,924 - INFO - emp_002 - Stored embedding computed in 0.432 sec
+2025-08-18 16:56:14,349 - INFO - emp_002 - Input embedding computed in 0.425 sec
+2025-08-18 16:56:14,349 - INFO - emp_002 - Verification completed in 0.906 sec | Result: True, Similarity: 0.7126
+2025-08-18 16:56:46,472 - INFO - Starting verification for emp_002
+2025-08-18 16:56:46,942 - INFO - emp_002 - Stored embedding computed in 0.423 sec
+2025-08-18 16:56:47,668 - INFO - emp_002 - Input embedding computed in 0.726 sec
+2025-08-18 16:56:47,668 - INFO - emp_002 - Verification completed in 1.196 sec | Result: True, Similarity: 0.6719

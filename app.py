@@ -66,7 +66,6 @@ def verify_employee(empid, input_image, threshold=0.5):
 
     total_time = time.time() - start_time
     logging.info(f"{empid} - Verification completed in {total_time:.3f} sec | Result: {verified}, Similarity: {sim:.4f}")
-
     return verified, sim
 
 # ----------------- Streamlit UI -----------------
