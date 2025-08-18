@@ -21,52 +21,63 @@ app.prepare(ctx_id=0, det_size=(640, 640))
 
 EMPLOYEE_DIR = "employees"
 
-def load_employee_image(empid):
-    """Load the stored image for a given employee ID."""
-    for ext in ["jpg", "jpeg", "png"]:
-        path = os.path.join(EMPLOYEE_DIR, f"{empid}.{ext}")
-        if os.path.exists(path):
-            return cv2.imread(path)
-    return None
+def load_employee_images(empid):
+    """Load all stored images for a given employee ID."""
+    emp_dir = os.path.join(EMPLOYEE_DIR, empid)
+    if not os.path.exists(emp_dir):
+        return []
+
+    images = []
+    for file in os.listdir(emp_dir):
+        if file.lower().endswith(("jpg", "jpeg", "png")):
+            img_path = os.path.join(emp_dir, file)
+            img = cv2.imread(img_path)
+            if img is not None:
+                images.append(img)
+    return images
 
 def get_embedding(image):
     faces = app.get(image)
     if len(faces) == 0:
-        return None, None
-    return faces[0].normed_embedding, faces[0]
+        return None
+    return faces[0].normed_embedding
 
 def verify_employee(empid, input_image, threshold=0.5):
-    """Verify input image against the stored image of empid, with timing logs."""
+    """Verify input image against multiple stored images of empid."""
     start_time = time.time()
     logging.info(f"Starting verification for {empid}")
 
-    stored_img = load_employee_image(empid)
-    if stored_img is None:
-        logging.error(f"{empid} - Employee ID not found in database")
-        return None, "Employee ID not found in database"
+    # First, check input face
+    input_emb = get_embedding(input_image)
+    if input_emb is None:
+        logging.warning(f"{empid} - No face detected in input image")
+        return None, "Face not detected in input image"
 
-    # Get embeddings with timing
-    t0 = time.time()
-    stored_emb, _ = get_embedding(stored_img)
-    stored_time = time.time() - t0
-    logging.info(f"{empid} - Stored embedding computed in {stored_time:.3f} sec")
+    # Load stored images
+    stored_images = load_employee_images(empid)
+    if not stored_images:
+        logging.error(f"{empid} - No images found in database")
+        return None, "Employee images not found in database"
 
-    t1 = time.time()
-    input_emb, _ = get_embedding(input_image)
-    input_time = time.time() - t1
-    logging.info(f"{empid} - Input embedding computed in {input_time:.3f} sec")
+    # Compute embeddings one by one
+    for idx, img in enumerate(stored_images):
+        emb = get_embedding(img)
+        if emb is None:
+            logging.warning(f"{empid} - Face not detected in stored image {idx+1}")
+            continue  # skip invalid stored image
 
-    if stored_emb is None or input_emb is None:
-        logging.warning(f"{empid} - Face not detected.")
-        return None, "Face not detected."
+        sim = cosine_similarity([emb], [input_emb])[0][0]
+        logging.info(f"{empid} - Compared with stored image {idx+1} | Similarity: {sim:.4f}")
 
-    # Cosine similarity
-    sim = cosine_similarity([stored_emb], [input_emb])[0][0]
-    verified = sim > threshold
+        if sim > threshold:
+            total_time = time.time() - start_time
+            logging.info(f"{empid} - Verification PASSED in {total_time:.3f} sec | Similarity: {sim:.4f}")
+            return True, sim  # stop at first match
 
+    # If none matched
     total_time = time.time() - start_time
-    logging.info(f"{empid} - Verification completed in {total_time:.3f} sec | Result: {verified}, Similarity: {sim:.4f}")
-    return verified, sim
+    logging.info(f"{empid} - Verification FAILED in {total_time:.3f} sec")
+    return False, sim
 
 # ----------------- Streamlit UI -----------------
 st.title("Employee Face Verification System")
