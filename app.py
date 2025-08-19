@@ -47,7 +47,7 @@ def get_embedding(image):
     return faces[0].normed_embedding
 
 def verify_employee(empid, input_image, threshold=0.65):
-    """Verify input image against multiple stored images of empid, returning all similarities."""
+  
     start_time = time.time()
     logging.info(f"Starting verification for {empid}")
 

@@ -32,3 +32,12 @@
 2025-08-19 09:53:53,384 - WARNING - emp_002 - No face detected in input image
 2025-08-19 09:55:48,348 - INFO - Starting verification for emp_002
 2025-08-19 09:55:48,468 - WARNING - emp_002 - No face detected in input image
+2025-08-19 09:59:36,657 - INFO - Starting verification for emp_002
+2025-08-19 09:59:36,780 - WARNING - emp_002 - No face detected in input image | Time: 0.124 sec
+2025-08-19 10:00:15,071 - INFO - Starting verification for emp_002
+2025-08-19 10:00:15,481 - INFO - Looking for employee folder: employees\emp_002
+2025-08-19 10:00:16,187 - INFO - emp_002 - Compared with pic_1_emp_002.jpeg | Similarity: 0.6591
+2025-08-19 10:00:16,606 - INFO - emp_002 - Compared with pic_2_emp_002.jpeg | Similarity: 0.6623
+2025-08-19 10:00:16,998 - INFO - emp_002 - Compared with pic_3_emp_002.jpeg | Similarity: 0.5665
+2025-08-19 10:00:17,682 - INFO - emp_002 - Compared with pic_4_emp_002.jpeg | Similarity: 0.6629
+2025-08-19 10:00:17,682 - INFO - emp_002 - Verification PASSED in 2.610 sec | Best Similarity: 0.6629
