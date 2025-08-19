@@ -54,13 +54,15 @@ def verify_employee(empid, input_image, threshold=0.65):
     # First, check input face
     input_emb = get_embedding(input_image)
     if input_emb is None:
-        logging.warning(f"{empid} - No face detected in input image")
+        total_time = time.time() - start_time
+        logging.warning(f"{empid} - No face detected in input image | Time: {total_time:.3f} sec")
         return None, "Face not detected in input image", []
 
     # Load stored images
     stored_images = load_employee_images(empid)
     if not stored_images:
-        logging.error(f"{empid} - No images found in database")
+        total_time = time.time() - start_time
+        logging.error(f"{empid} - No images found in database | Time: {total_time:.3f} sec")
         return None, "Employee ID not found in database", []
 
     similarities = []
@@ -90,6 +92,7 @@ def verify_employee(empid, input_image, threshold=0.65):
         logging.info(f"{empid} - Verification FAILED in {total_time:.3f} sec | Best Similarity: {best_sim:.4f}")
 
     return verified, best_sim, similarities
+
 
 
 # ----------------- Streamlit UI -----------------
