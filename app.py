@@ -35,7 +35,7 @@ def load_employee_images(empid):
             img_path = os.path.join(emp_dir, file)
             img = cv2.imread(img_path)
             if img is not None:
-                images.append(img)
+                images.append((file, img))   # store filename + image
             else:
                 logging.warning(f"Failed to load image: {img_path}")
     return images
@@ -47,7 +47,7 @@ def get_embedding(image):
     return faces[0].normed_embedding
 
 def verify_employee(empid, input_image, threshold=0.65):
-    """Verify input image against multiple stored images of empid."""
+    """Verify input image against multiple stored images of empid, returning all similarities."""
     start_time = time.time()
     logging.info(f"Starting verification for {empid}")
 
@@ -55,33 +55,42 @@ def verify_employee(empid, input_image, threshold=0.65):
     input_emb = get_embedding(input_image)
     if input_emb is None:
         logging.warning(f"{empid} - No face detected in input image")
-        return None, "Face not detected in input image"
+        return None, "Face not detected in input image", []
 
     # Load stored images
     stored_images = load_employee_images(empid)
     if not stored_images:
         logging.error(f"{empid} - No images found in database")
-        return None, "Employee ID not found in database"
+        return None, "Employee ID not found in database", []
+
+    similarities = []
+    verified = False
+    best_sim = -1
 
     # Compute embeddings one by one
-    for idx, img in enumerate(stored_images):
+    for idx, (filename, img) in enumerate(stored_images):
         emb = get_embedding(img)
         if emb is None:
-            logging.warning(f"{empid} - Face not detected in stored image {idx+1}")
-            continue  # skip invalid stored image
+            logging.warning(f"{empid} - Face not detected in stored image {filename}")
+            continue
 
         sim = cosine_similarity([emb], [input_emb])[0][0]
-        logging.info(f"{empid} - Compared with stored image {idx+1} | Similarity: {sim:.4f}")
+        similarities.append((filename, sim))
+        logging.info(f"{empid} - Compared with {filename} | Similarity: {sim:.4f}")
 
+        if sim > best_sim:
+            best_sim = sim
         if sim > threshold:
-            total_time = time.time() - start_time
-            logging.info(f"{empid} - Verification PASSED in {total_time:.3f} sec | Similarity: {sim:.4f}")
-            return True, sim  # stop at first match
+            verified = True
 
-    # If none matched
     total_time = time.time() - start_time
-    logging.info(f"{empid} - Verification FAILED in {total_time:.3f} sec")
-    return False, sim
+    if verified:
+        logging.info(f"{empid} - Verification PASSED in {total_time:.3f} sec | Best Similarity: {best_sim:.4f}")
+    else:
+        logging.info(f"{empid} - Verification FAILED in {total_time:.3f} sec | Best Similarity: {best_sim:.4f}")
+
+    return verified, best_sim, similarities
+
 
 # ----------------- Streamlit UI -----------------
 st.title("Employee Face Verification System")
@@ -98,15 +107,20 @@ with tab1:
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, 1)
 
-        result, message = verify_employee(empid, img)
+        result, best_sim, similarities = verify_employee(empid, img)
 
         if result is None:
-            st.error(message)
+            st.error(best_sim)  # here best_sim holds error message
         else:
             if result:
-                st.success(f"✅ Verification Passed (Similarity: {message:.4f})")
+                st.success(f"✅ Verification Passed (Best Similarity: {best_sim:.4f})")
             else:
-                st.error(f"❌ Verification Failed (Similarity: {message:.4f})")
+                st.error(f"❌ Verification Failed (Best Similarity: {best_sim:.4f})")
+
+            # Show all similarity scores
+            st.subheader("Similarity scores with stored images:")
+            for fname, sim in similarities:
+                st.write(f"**{fname}** → {sim:.4f}")
 
 # ---------- Tab 2: Live Webcam ----------
 with tab2:
@@ -119,13 +133,16 @@ with tab2:
         file_bytes = np.asarray(bytearray(live_frame.read()), dtype=np.uint8)
         live_img = cv2.imdecode(file_bytes, 1)
 
-        result, message = verify_employee(empid, live_img)
+        result, best_sim, similarities = verify_employee(empid, live_img)
 
         if result is None:
-            st.error(message)
+            st.error(best_sim)
         else:
             if result:
-                st.success(f"✅ Verification Passed (Similarity: {message:.4f})")
+                st.success(f"✅ Verification Passed (Best Similarity: {best_sim:.4f})")
             else:
-                st.error(f"❌ Verification Failed (Similarity: {message:.4f})")
+                st.error(f"❌ Verification Failed (Best Similarity: {best_sim:.4f})")
 
+            st.subheader("Similarity scores with stored images:")
+            for fname, sim in similarities:
+                st.write(f"**{fname}** → {sim:.4f}")
